@@ -10,6 +10,8 @@
 //  8. LifelikeWorld
 //  9. Plant
 // 10. PlantEater
+// 11. SmartPlantEater
+// 12. Predator
 
 'use strict';
 
@@ -347,12 +349,12 @@ PlantEater.prototype.act = function(view) {
 
 function SmartPlantEater() {
     this.energy = 20;
-    this.direction = randomElement(directionNames);
+    this.direction = 's';
 }
 
 SmartPlantEater.prototype.act = function(view) {
     var space = view.find(' ');
-    if (this.energy > 80 && space) {
+    if (this.energy > 90 && space) {
         return { type: 'reproduce', direction: space };
     }
     var plants = view.findAll('*');
@@ -362,6 +364,44 @@ SmartPlantEater.prototype.act = function(view) {
     if (view.look(this.direction) != ' ' && space) {
         this.direction = space;
     }
+    return { type: 'move', direction: this.direction };
+}
+
+// 12. Predator
+
+function Predator() {
+    this.energy = 100;
+    this.direction = 'n';
+    this.herbiesSeen = [];
+}
+
+Predator.prototype.act = function(view) {
+    var herbiesPerTurn = this.herbiesSeen.reduce(function(a,b) {
+        return a + b;
+    }, 0) / this.herbiesSeen.length;
+
+    var herbies = view.findAll('O');
+    this.herbiesSeen.push(herbies.length);
+
+    if (this.herbiesSeen.length > 6) {
+        this.herbiesSeen.shift();
+    }
+    console.log(herbiesPerTurn);
+    if (herbies && herbiesPerTurn > 0.15) {
+        console.log('herby eaten');
+        return { type: 'eat', direction: randomElement(herbies) };
+    }
+
+    var space = view.find(' ');
+    if (this.energy > 200 && space) {
+        // console.log('reproduced');
+        return { type: 'reproduce', direction: space };
+    }
+
+    if (view.look(this.direction) != ' ' && space) {
+        this.direction = space;
+    }
+    // console.log('just moved ('+ this.energy +')');
     return { type: 'move', direction: this.direction };
 }
 
@@ -384,23 +424,48 @@ function setMapInterval() {
 setMapInterval();
 
 var world = new LifelikeWorld(
-  ["############################",
-   "#####                 ######",
-   "##   ***                **##",
-   "#   *##**         **  O  *##",
-   "#    ***     O    ##**    *#",
-   "#       O         ##***    #",
-   "#                 ##**     #",
-   "#   O       #*             #",
-   "#*          #**       O    #",
-   "#***        ##**    O    **#",
-   "##****     ###***       *###",
-   "############################"],
-  {'#': Wall,
-   // 'O': PlantEater,
-   '*': Plant,
-   'O': SmartPlantEater}
+  ["####################################################",
+   "#                 ####         ****              ###",
+   "#   *  @  ##                 ########       OO    ##",
+   "#   *    ##        O O                 ****       *#",
+   "#       ##*                        ##########     *#",
+   "#      ##***  *         ****                     **#",
+   "#* **  #  *  ***      #########                  **#",
+   "#* **  #      *               #   *              **#",
+   "#     ##              #   O   #  ***          ######",
+   "#*            @       #       #   *        O  #    #",
+   "#*                    #  ######                 ** #",
+   "###          ****          ***                  ** #",
+   "#       O                        @         O       #",
+   "#   *     ##  ##  ##  ##               ###      *  #",
+   "#   **         #              *       #####  O     #",
+   "##  **  O   O  #  #    ***  ***        ###      ** #",
+   "###               #   *****                    ****#",
+   "####################################################"],
+  {"#": Wall,
+   "@": Predator,
+   "O": SmartPlantEater, // from previous exercise
+   "*": Plant}
 );
+
+// var world = new LifelikeWorld(
+//   ["############################",
+//    "#####                 ######",
+//    "##   ***                **##",
+//    "#   *##**         **  O  *##",
+//    "#    ***     O    ##**    *#",
+//    "#       O         ##***    #",
+//    "#                 ##**     #",
+//    "#   O       #*             #",
+//    "#*          #**       O    #",
+//    "#***        ##**    O    **#",
+//    "##****     ###***       *###",
+//    "############################"],
+//   {'#': Wall,
+//    // 'O': PlantEater,
+//    '*': Plant,
+//    'O': SmartPlantEater}
+// );
 
 
 
