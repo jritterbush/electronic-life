@@ -387,7 +387,7 @@ Predator.prototype.act = function(view) {
         this.herbiesSeen.shift();
     }
     console.log(herbiesPerTurn);
-    if (herbies && herbiesPerTurn > 0.15) {
+    if (herbies && herbiesPerTurn > 0.25) {
         console.log('herby eaten');
         return { type: 'eat', direction: randomElement(herbies) };
     }
